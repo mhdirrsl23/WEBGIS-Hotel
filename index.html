@@ -1,0 +1,1499 @@
+<!DOCTYPE html>
+<html class="light" lang="id">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>WEBGIS-HOTEL</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Google Fonts & Icons -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet">
+    <!-- Leaflet GIS -->
+    <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-on-surface": "#f0f1f3",
+                        "primary-container": "#0052cc",
+                        "on-primary-container": "#c4d2ff",
+                        "surface-container": "#edeef0",
+                        "on-secondary-fixed-variant": "#00419d",
+                        "on-secondary": "#ffffff",
+                        "on-surface": "#191c1e",
+                        "outline": "#737685",
+                        "on-tertiary-container": "#c7d4e8",
+                        "tertiary": "#384454",
+                        "on-surface-variant": "#434654",
+                        "on-tertiary-fixed": "#101c2b",
+                        "tertiary-fixed": "#d6e3f7",
+                        "surface-container-low": "#f3f4f6",
+                        "outline-variant": "#c3c6d6",
+                        "inverse-primary": "#b2c5ff",
+                        "surface": "#f8f9fb",
+                        "secondary-container": "#709bfe",
+                        "primary-fixed-dim": "#b2c5ff",
+                        "inverse-surface": "#2e3132",
+                        "background": "#f8f9fb",
+                        "on-error-container": "#93000a",
+                        "on-tertiary": "#ffffff",
+                        "surface-dim": "#d9dadc",
+                        "surface-container-high": "#e7e8ea",
+                        "surface-bright": "#f8f9fb",
+                        "on-secondary-fixed": "#001946",
+                        "on-primary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "primary-fixed": "#dae2ff",
+                        "secondary": "#285ab9",
+                        "primary": "#003d9b",
+                        "on-background": "#191c1e",
+                        "on-primary-fixed": "#001848",
+                        "secondary-fixed-dim": "#b1c6ff",
+                        "surface-variant": "#e1e2e4",
+                        "on-tertiary-fixed-variant": "#3b4858",
+                        "on-secondary-container": "#003179",
+                        "surface-tint": "#0c56d0",
+                        "surface-container-highest": "#e1e2e4",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#bbc7db",
+                        "on-primary-fixed-variant": "#0040a2",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error": "#ffffff",
+                        "secondary-fixed": "#d9e2ff",
+                        "tertiary-container": "#4f5c6c"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "margin-desktop": "24px",
+                        "panel-width": "360px",
+                        "margin-mobile": "16px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "34px", "fontWeight": "700" }],
+                        "label-sm": ["11px", { "lineHeight": "14px", "fontWeight": "500" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "display-lg": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "fontWeight": "600" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .dark .glass-panel {
+            background: rgba(46, 49, 50, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #map {
+            height: 100vh;
+            width: 100%;
+            z-index: 0;
+        }
+
+        .leaflet-popup-content-wrapper {
+            background: rgba(255, 255, 255, 0.9) !important;
+            backdrop-filter: blur(10px);
+            border-radius: 12px !important;
+            padding: 0 !important;
+            overflow: hidden;
+        }
+
+        .leaflet-popup-content {
+            margin: 0 !important;
+            width: 280px !important;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .detail-panel-active {
+            transform: translateX(0) !important;
+        }
+    </style>
+
+    <link rel="stylesheet" href="css/leaflet.css">
+    <link rel="stylesheet" href="css/MarkerCluster.css">
+    <link rel="stylesheet" href="css/qgis2web.css">
+
+    <script src="js/leaflet.js"></script>
+    <script src="js/leaflet.markercluster.js"></script>
+    <script src="js/leaflet-heat.js"></script>
+
+    <script src="data/gadm41_IDN_3_1.js"></script>
+    <script src="data/DaftarHoteldiKecamatanPekanbaruKotaSheet1_2.js"></script>
+
+</head>
+
+<body class="bg-background text-on-surface font-body-md">
+    <!-- Top AppBar -->
+    <header
+        class="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-6 py-3 w-full h-16 bg-white/80 dark:bg-inverse-surface/80 backdrop-blur-xl border-b border-white/30 dark:border-outline-variant/20 shadow-sm">
+        <div class="flex items-center justify-between w-full">
+            <h1 class="text-headline-sm font-bold text-primary dark:text-primary-fixed-dim">Sebaran Hotel Pekanbaru Kota
+            </h1>
+            <div class="w-[350px] relative">
+
+                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+
+                    search
+
+                </span>
+
+                <input id="searchInput" type="text" placeholder="Cari hotel di Pekanbaru..."
+                    class="w-full pl-12 pr-4 py-3 rounded-full border border-gray-200 bg-white shadow-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all">
+
+            </div>
+        </div>
+    </header>
+    <main class="relative pt-16 h-screen flex">
+        <!-- Sidebar Navigation (Analytical Sidebar) -->
+        <aside
+            class="hidden md:flex flex-col h-full w-[360px] z-40 bg-white/70 dark:bg-inverse-surface/70 backdrop-blur-2xl border-r border-white/30 dark:border-outline-variant/20 shadow-xl overflow-hidden">
+            <div class="p-6 flex flex-col gap-6 h-full overflow-y-auto custom-scrollbar">
+                <!-- Welcome Section -->
+                <div>
+                    <h2 class="font-headline-sm text-headline-sm text-primary dark:text-primary-fixed-dim">Dashboard
+                        Hotel</h2>
+                    <p class="text-on-surface-variant text-body-md">Analisis Spasial Akomodasi Pekanbaru</p>
+                </div>
+                <!-- Filters -->
+                <div class="flex flex-col gap-4">
+                    <label class="font-label-md text-label-md text-primary uppercase tracking-wider">
+                        Rating Hotel
+                    </label>
+
+                    <select id="ratingFilter"
+                        class="w-full px-4 py-4 rounded-xl border border-outline-variant bg-surface text-on-surface">
+
+                        <option value="all">Semua Rating</option>
+                        <option value="5">5.0</option>
+                        <option value="4">4.0+</option>
+                        <option value="3">3.0+</option>
+
+                    </select>
+                    <label class="font-label-md text-label-md text-primary uppercase tracking-wider mt-2">Bintang
+                        Hotel</label>
+                    <div class="flex gap-2">
+
+                        <button class="star-filter active flex-1 py-3 rounded-xl bg-primary text-white font-semibold"
+                            data-star="all">
+
+                            Semua
+
+                        </button>
+
+                        <button class="star-filter flex-1 py-3 rounded-xl bg-gray-200 text-gray-700 font-semibold"
+                            data-star="4">
+
+                            4★
+
+                        </button>
+
+                        <button class="star-filter flex-1 py-3 rounded-xl bg-gray-200 text-gray-700 font-semibold"
+                            data-star="5">
+
+                            5★
+
+                        </button>
+
+                    </div>
+                </div>
+                <!-- Team Section -->
+                <div class="p-4 bg-primary-container/10 rounded-xl border border-primary/10">
+
+                    <h3 class="font-label-md text-label-md text-primary mb-4">
+                        Anggota Kelompok
+                    </h3>
+
+                    <div class="flex flex-col gap-4">
+
+                        <!-- Anggota 1 -->
+                        <div class="flex items-center gap-4 p-3 bg-white rounded-xl shadow-sm">
+
+                            <img src="assets/anggota1.jpg"
+                                class="w-16 h-16 rounded-full object-cover border-2 border-primary">
+
+                            <div>
+                                <h4 class="font-bold text-sm">
+                                    Habibie
+                                </h4>
+
+                                <p class="text-xs text-gray-500">
+                                    2403112357
+                                </p>
+                            </div>
+
+                        </div>
+
+                        <!-- Anggota 2 -->
+                        <div class="flex items-center gap-4 p-3 bg-white rounded-xl shadow-sm">
+
+                            <img src="assets/anggota2.jpg"
+                                class="w-16 h-16 rounded-full object-cover border-2 border-primary">
+
+                            <div>
+                                <h4 class="font-bold text-sm">
+                                    Mhd.Irsal
+                                </h4>
+
+                                <p class="text-xs text-gray-500">
+                                    2403114255
+                                </p>
+                            </div>
+
+                        </div>
+
+                        <!-- Anggota 3 -->
+                        <div class="flex items-center gap-4 p-3 bg-white rounded-xl shadow-sm">
+
+                            <img src="assets/anggota3.jpg"
+                                class="w-16 h-16 rounded-full object-cover border-2 border-primary">
+
+                            <div>
+                                <h4 class="font-bold text-sm">
+                                    Ryan Dermawan
+                                </h4>
+
+                                <p class="text-xs text-gray-500">
+                                    2403134868
+                                </p>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+                <!-- Hotel List -->
+                <div class="flex flex-col gap-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-label-md text-label-md text-primary uppercase tracking-wider">Akomodasi Terdekat
+                        </h3>
+                        <span class="text-label-sm text-outline">12 Lokasi</span>
+                    </div>
+                    <div class="flex flex-col gap-3" id="hotelList">
+                    </div>
+                </div>
+            </div>
+            <footer class="mt-auto p-6 border-t border-outline-variant/20 bg-surface-container-low/50">
+                <div class="flex flex-col gap-4">
+                    <div class="flex flex-wrap gap-3 text-label-sm text-on-surface-variant">
+                        <a href="#" class="hover:text-primary transition-colors">Privacy Policy</a>
+                        <span class="text-outline-variant">•</span>
+                        <a href="#" class="hover:text-primary transition-colors">Terms of Service</a>
+                        <span class="text-outline-variant">•</span>
+                        <a href="#" class="hover:text-primary transition-colors">Contact Us</a>
+                    </div>
+                    <div class="flex gap-4">
+                        <a href="#" class="text-outline hover:text-primary transition-colors">
+                            <span class="material-symbols-outlined text-[20px]">public</span>
+                        </a>
+                        <a href="#" class="text-outline hover:text-primary transition-colors">
+                            <span class="material-symbols-outlined text-[20px]">mail</span>
+                        </a>
+                        <a href="#" class="text-outline hover:text-primary transition-colors">
+                            <span class="material-symbols-outlined text-[20px]">share</span>
+                        </a>
+                    </div>
+                    <p class="text-label-sm text-outline leading-tight">
+                        © 2026 Kelompok 2 Sistem Informasi Geografis.<br>All rights reserved.
+                    </p>
+                </div>
+            </footer>
+        </aside>
+        <!-- Main Map Area -->
+        <section class="flex-1 relative">
+            <div id="map"></div>
+            <!-- Floating Map Controls -->
+            <div class="absolute bottom-10 right-6 z-40 flex flex-col gap-2">
+                <button
+                    class="glass-panel p-3 rounded-full shadow-lg text-primary hover:bg-primary hover:text-white transition-all"
+                    onclick="locateMe()">
+                    <span class="material-symbols-outlined">my_location</span>
+                </button>
+                <button
+                    class="glass-panel p-3 rounded-full shadow-lg text-primary hover:bg-primary hover:text-white transition-all"
+                    onclick="resetView()">
+                    <span class="material-symbols-outlined">restart_alt</span>
+                </button>
+                <div class="mt-4 glass-panel p-4 rounded-xl shadow-xl w-48">
+                    <h4 class="font-label-md text-label-md text-primary mb-2">
+                        Layer Peta
+                    </h4>
+
+                    <label class="flex items-center gap-2 text-body-md cursor-pointer">
+
+                        <input type="checkbox" checked id="hotelLayerToggle"
+                            class="rounded text-primary focus:ring-primary">
+
+                        <span>Layer Hotel</span>
+
+                    </label>
+
+                    <label class="flex items-center gap-2 text-body-md cursor-pointer mt-2">
+
+                        <input type="checkbox" checked id="kecamatanLayerToggle"
+                            class="rounded text-primary focus:ring-primary">
+
+                        <span>Layer Kecamatan</span>
+
+                    </label>
+
+                    <label class="flex items-center gap-2 text-body-md cursor-pointer mt-2">
+
+                        <input type="checkbox" id="satelliteToggle" class="rounded text-primary focus:ring-primary">
+
+                        <span>Google Satellite</span>
+
+                    </label>
+
+                    <label class="flex items-center gap-2 text-body-md cursor-pointer mt-2">
+
+                        <input type="checkbox" id="heatmapToggle" class="rounded text-primary focus:ring-primary">
+
+                        <span>Heatmap Hotel</span>
+
+                    </label>
+                </div>
+            </div>
+        </section>
+        <!-- Sliding Detail Panel -->
+        <div class="fixed top-0 right-0 h-full w-full md:w-[480px] bg-white z-[60] shadow-2xl transition-transform duration-500 translate-x-full overflow-y-auto"
+            id="detailPanel">
+            <button
+                class="absolute top-6 right-6 z-10 w-10 h-10 rounded-full bg-white/80 backdrop-blur shadow-md flex items-center justify-center hover:bg-error hover:text-white transition-all"
+                onclick="closeDetail()">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+            <div class="pb-12" id="detailContent">
+                <!-- Content injected by JS -->
+            </div>
+        </div>
+    </main>
+    <script>
+        // Mock Hotel Data
+        const hotels = json_DaftarHoteldiKecamatanPekanbaruKotaSheet1_2.features.map((feature, index) => {
+
+            const ratingText = feature.properties.field_4 || "0/5";
+
+            const rating = parseFloat(
+                ratingText.replace(",", ".")
+            ) || 0;
+
+            const starsText = feature.properties.field_3 || "0 Bintang";
+
+            const stars = parseInt(starsText) || 0;
+
+            return {
+
+                id: index + 1,
+
+                name: feature.properties.field_1 || "Hotel",
+
+                address: feature.properties.field_2 || "-",
+
+                stars: stars,
+
+                rating: rating,
+
+                lat: feature.geometry.coordinates[1],
+
+                lng: feature.geometry.coordinates[0],
+
+                image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=800"
+
+            };
+
+        });
+
+        let map;
+        let markersLayer;
+        let kecamatanLayer;
+        let heatLayer;
+        let userMarker = null;
+        let watchId = null;
+        let locationActive = false;
+        let firstLocationUpdate = true;
+        let selectedDestination = null;
+        let selectedRouteMode = 'car';
+        let routeControl = null;
+        let currentUserLatLng = null;
+        let selectedStar = 'all';
+
+        var layer_GoogleSatellite_0 = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+            pane: 'pane_GoogleSatellite_0',
+            opacity: 0.35,
+            attribution: '<a href="https://www.google.at/permissions/geoguidelines/attr-guide.html">Map data ©2015 Google</a>',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 20
+        });
+
+        function initMap() {
+            map = L.map('map', {
+                zoomControl: false
+            }).setView([0.5071, 101.4478], 13);
+
+            map.createPane('pane_GoogleSatellite_0');
+
+            map.getPane('pane_GoogleSatellite_0').style.zIndex = 200;
+
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                subdomains: 'abcd',
+                maxZoom: 20
+            }).addTo(map);
+
+            markersLayer = L.markerClusterGroup();
+
+            map.addLayer(markersLayer);
+
+            kecamatanLayer = L.geoJSON(json_gadm41_IDN_3_1, {
+                style: {
+                    color: '#003d9b',
+                    weight: 2,
+                    fillOpacity: 0.1
+                }
+            }).addTo(map);
+
+            hotels.forEach(hotel => {
+                const marker = L.marker([hotel.lat, hotel.lng], {
+                    icon: L.divIcon({
+                        className: 'custom-div-icon',
+                        html: `<div class="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center border-4 border-white shadow-xl hover:scale-110 transition-transform">
+                                <span class="material-symbols-outlined" style="font-size: 20px;">hotel</span>
+                               </div>`,
+                        iconSize: [40, 40],
+                        iconAnchor: [20, 20]
+                    })
+                }).addTo(markersLayer);
+
+                const popupContent = `
+                <div class="w-full">
+
+                    <div 
+                        class="h-32 w-full bg-cover bg-center"
+                        style="background-image:url('${hotel.image}')">
+                    </div>
+
+                    <div class="p-4">
+
+                        <h3 class="font-bold text-lg mb-2">
+                            ${hotel.name}
+                        </h3>
+
+                        <div class="flex items-center gap-2 mb-2">
+
+                            <span class="text-yellow-500">
+                                ⭐
+                            </span>
+
+                            <span>
+                                ${hotel.rating}
+                            </span>
+
+                            <span class="text-gray-500">
+                                (${hotel.stars} Bintang)
+                            </span>
+
+                        </div>
+
+                        <p class="text-sm text-gray-600 mb-4">
+                            ${hotel.address}
+                        </p>
+
+                        <div class="flex gap-3 mt-4">
+
+                            <button
+                                onclick="openDetail(${hotel.id})"
+                                class="flex-1 bg-white border-2 border-primary text-primary py-3 rounded-xl font-semibold hover:bg-primary hover:text-white transition-all">
+
+                                Lihat Detail
+
+                            </button>
+
+                            <button
+                                onclick="showRoute(${hotel.lat}, ${hotel.lng})"
+                                 class="flex-1 bg-primary text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all">
+
+                                Rute
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+                `;
+                marker.bindPopup(popupContent);
+            });
+        }
+
+        function renderHotelList() {
+            const listContainer = document.getElementById('hotelList');
+            listContainer.innerHTML = hotels.map(hotel => `
+                <div class="group p-3 glass-panel rounded-xl hover:bg-primary-container hover:text-on-primary-container transition-all cursor-pointer shadow-sm" onclick="map.flyTo([${hotel.lat}, ${hotel.lng}], 16)">
+                    <div class="flex gap-4">
+                        <div class="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+                            <img src="${hotel.image}" alt="${hotel.name}" class="w-full h-full object-cover group-hover:scale-110 transition-transform">
+                        </div>
+                        <div class="flex flex-col justify-between py-1">
+                            <div>
+                                <h4 class="font-bold text-body-md line-clamp-1">${hotel.name}</h4>
+                                <p class="text-label-sm opacity-80">${hotel.address}</p>
+                            </div>
+                            <div class="flex justify-between items-end w-full">
+                                <div class="flex text-yellow-500">
+                                    ${'<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: \'FILL\' 1;">star</span>'.repeat(hotel.stars)}
+                                </div>
+                                <span class="text-label-sm font-bold text-primary group-hover:text-white">⭐ ${hotel.rating}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderFilteredHotels(filteredHotels) {
+
+            // RESET MARKER
+            markersLayer.clearLayers();
+
+            filteredHotels.forEach(hotel => {
+
+                const marker = L.marker([hotel.lat, hotel.lng], {
+
+                    icon: L.divIcon({
+
+                        className: 'custom-div-icon',
+
+                        html: `
+                <div class="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center border-4 border-white shadow-xl">
+                    <span class="material-symbols-outlined" style="font-size:20px;">
+                        hotel
+                    </span>
+                </div>
+                `,
+
+                        iconSize: [40, 40],
+
+                        iconAnchor: [20, 20]
+
+                    })
+
+                });
+
+                marker.bindPopup(`
+
+                <div class="w-[300px] overflow-hidden rounded-2xl">
+
+                    <img
+                    src="${hotel.image}"
+                    class="w-full h-40 object-cover">
+
+                    <div class="p-4">
+
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">
+                            ${hotel.name}
+                        </h3>
+
+                        <div class="flex items-center gap-2 mb-3">
+
+                            <span class="text-yellow-500 text-lg">
+                                ★
+                            </span>
+
+                            <span class="font-semibold">
+                                ${hotel.rating}
+                            </span>
+
+                            <span class="text-gray-500">
+                                (${hotel.stars} Bintang)
+                            </span>
+
+                        </div>
+
+                        <p class="text-gray-600 text-sm leading-relaxed mb-4">
+                            ${hotel.address}
+                        </p>
+
+                        <div class="flex gap-3">
+
+                            <button
+                            onclick="openDetail(${hotel.id})"
+                            class="flex-1 bg-white border-2 border-primary text-primary py-3 rounded-xl font-semibold hover:bg-primary hover:text-white transition-all">
+
+                                Lihat Detail
+
+                            </button>
+
+                            <button
+                            onclick="showRoute(${hotel.lat}, ${hotel.lng})"
+                            class="flex-1 bg-primary text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all">
+
+                                Rute
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                `);
+
+                markersLayer.addLayer(marker);
+
+            });
+
+            // UPDATE LIST SIDEBAR
+            const listContainer =
+                document.getElementById('hotelList');
+
+            listContainer.innerHTML =
+                filteredHotels.map(hotel => `
+
+        <div
+        class="group p-3 glass-panel rounded-xl cursor-pointer"
+        onclick="map.flyTo([${hotel.lat}, ${hotel.lng}], 16)">
+
+            <div class="flex gap-4">
+
+                <img
+                src="${hotel.image}"
+                class="w-20 h-20 rounded-lg object-cover">
+
+                <div>
+
+                    <h4 class="font-bold">
+                        ${hotel.name}
+                    </h4>
+
+                    <p class="text-sm text-gray-500">
+                        ⭐ ${hotel.rating}
+                    </p>
+
+                    <p class="text-sm text-gray-500">
+                        ${hotel.stars} Bintang
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    `).join('');
+
+        }
+
+
+        function openDetail(id) {
+            const hotel = hotels.find(h => h.id === id);
+            const detailPanel = document.getElementById('detailPanel');
+            const detailContent = document.getElementById('detailContent');
+
+            detailContent.innerHTML = `
+                <div class="h-80 w-full relative">
+                    <img src="${hotel.image}" class="w-full h-full object-cover" data-alt="Luxurious hotel room with modern interior design, floor-to-ceiling windows showing a panoramic view of Pekanbaru city skyline at sunset. The room is decorated in soft blue and cream tones, featuring premium furniture, warm ambient lighting, and high-end finishes that convey a sense of analytical precision and professional comfort.">
+                    <div class="absolute bottom-0 left-0 w-full p-8 bg-gradient-to-t from-black/80 to-transparent">
+                        <div class="flex items-center gap-2 mb-2">
+                             ${'<span class="material-symbols-outlined text-yellow-400" style="font-variation-settings: \'FILL\' 1;">star</span>'.repeat(hotel.stars)}
+                        </div>
+                        <h2 class="text-display-lg text-white font-bold leading-tight">${hotel.name}</h2>
+                    </div>
+                </div>
+                <div class="p-8 space-y-8">
+                    <div class="flex gap-6">
+                        <div class="flex-1 p-4 bg-surface-container rounded-2xl text-center">
+                            <span class="text-label-sm text-outline block mb-1">Rating</span>
+                            <span class="text-headline-sm font-bold text-primary">${hotel.rating}/5.0</span>
+                        </div>
+                        <div class="flex-1 p-4 bg-surface-container rounded-2xl text-center">
+                            <span class="text-label-sm text-outline block mb-1">Ulasan</span>
+                            <span class="text-headline-sm font-bold text-primary">1,248</span>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-headline-sm mb-4">Informasi Utama</h3>
+                        <p class="text-body-lg text-on-surface-variant leading-relaxed">
+                            Terletak di jantung kota Pekanbaru, ${hotel.name} menawarkan fasilitas modern kelas dunia untuk pebisnis maupun wisatawan. Dengan akses mudah ke pusat perbelanjaan dan area perkantoran, hotel ini menjadi pilihan utama untuk analisis spasial GIS kami.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h3 class="text-headline-sm mb-4">Fasilitas Unggulan</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="flex items-center gap-3 p-3 border border-outline-variant/30 rounded-xl">
+                                <span class="material-symbols-outlined text-primary">pool</span>
+                                <span class="text-body-md">Kolam Renang</span>
+                            </div>
+                            <div class="flex items-center gap-3 p-3 border border-outline-variant/30 rounded-xl">
+                                <span class="material-symbols-outlined text-primary">fitness_center</span>
+                                <span class="text-body-md">Pusat Kebugaran</span>
+                            </div>
+                            <div class="flex items-center gap-3 p-3 border border-outline-variant/30 rounded-xl">
+                                <span class="material-symbols-outlined text-primary">wifi</span>
+                                <span class="text-body-md">WiFi Gratis</span>
+                            </div>
+                            <div class="flex items-center gap-3 p-3 border border-outline-variant/30 rounded-xl">
+                                <span class="material-symbols-outlined text-primary">restaurant</span>
+                                <span class="text-body-md">Restoran</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-6">
+                        <button class="w-full bg-primary text-white py-4 rounded-xl font-bold text-body-lg hover:shadow-xl transition-all flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined">calendar_month</span>
+                            ⭐ Rating ${hotel.rating}
+                        </button>
+                        <a href="https://www.google.com/maps/search/?api=1&query=${hotel.lat},${hotel.lng}" target="_blank" class="w-full mt-3 border-2 border-primary text-primary py-4 rounded-xl font-bold text-body-lg flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined">map</span>
+                            Buka di Google Maps
+                        </a>
+                    </div>
+                </div>
+            `;
+
+            detailPanel.classList.add('detail-panel-active');
+        }
+
+        function closeDetail() {
+            document.getElementById('detailPanel').classList.remove('detail-panel-active');
+        }
+
+        function showRoute(hotelLat, hotelLng) {
+
+
+            if (!currentUserLatLng) {
+
+                alert('Klik Locate Me terlebih dahulu');
+
+                return;
+
+            }
+
+            selectedDestination = [hotelLat, hotelLng];
+
+            document
+                .getElementById('routePanel')
+                .classList
+                .remove('hidden');
+
+            createRoute();
+
+        }
+
+        function createRoute() {
+
+            if (routeControl) {
+
+                map.removeControl(routeControl);
+
+            }
+
+            routeControl = L.Routing.control({
+
+                waypoints: [
+
+                    L.latLng(
+                        currentUserLatLng[0],
+                        currentUserLatLng[1]
+                    ),
+
+                    L.latLng(
+                        selectedDestination[0],
+                        selectedDestination[1]
+                    )
+
+                ],
+
+                router: L.Routing.osrmv1({
+
+                    serviceUrl:
+                        'https://router.project-osrm.org/route/v1',
+
+                    profile:
+                        selectedRouteMode === 'motorcycle'
+                            ? 'driving'
+                            : 'driving'
+
+                }),
+
+                routeWhileDragging: false,
+
+                addWaypoints: false,
+
+                draggableWaypoints: false,
+
+                fitSelectedRoutes: false,
+
+                show: false,
+
+                lineOptions: {
+                    styles: [
+                        {
+                            color: '#0f4cbd',
+                            weight: 6,
+                            opacity: 0.9
+                        }
+                    ]
+                },
+
+                createMarker: function () {
+                    return null;
+                }
+
+            })
+                .on('routesfound', function (e) {
+
+                    const route = e.routes[0];
+
+                    const distance =
+                        (route.summary.totalDistance / 1000)
+                            .toFixed(1);
+
+                    const time =
+                        Math.round(
+                            route.summary.totalTime / 60
+                        );
+
+                    document
+                        .getElementById('routeDistance')
+                        .innerText = distance + ' km';
+
+                    document
+                        .getElementById('routeTime')
+                        .innerText = time + ' Menit';
+
+                })
+                .addTo(map);
+
+        }
+
+        function setRouteMode(mode) {
+
+            selectedRouteMode = mode;
+
+            document
+                .getElementById('carMode')
+                .className =
+                mode === 'car'
+                    ? 'bg-primary text-white rounded-2xl py-4 flex flex-col items-center'
+                    : 'bg-gray-100 text-gray-500 rounded-2xl py-4 flex flex-col items-center';
+
+            document
+                .getElementById('motorMode')
+                .className =
+                mode === 'motorcycle'
+                    ? 'bg-primary text-white rounded-2xl py-4 flex flex-col items-center'
+                    : 'bg-gray-100 text-gray-500 rounded-2xl py-4 flex flex-col items-center';
+
+            createRoute();
+
+        }
+
+        function closeRoutePanel() {
+
+            document
+                .getElementById('routePanel')
+                .classList
+                .add('hidden');
+
+            if (routeControl) {
+
+                map.removeControl(routeControl);
+
+            }
+
+        }
+
+
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        function locateMe() {
+
+            // JIKA SUDAH AKTIF -> MATIKAN
+            if (locationActive) {
+
+                // HAPUS MARKER
+                if (userMarker) {
+
+                    map.removeLayer(userMarker);
+
+                    userMarker = null;
+
+                }
+
+                // STOP GPS
+                if (watchId !== null) {
+
+                    navigator.geolocation.clearWatch(watchId);
+
+                }
+
+                locationActive = false;
+
+                firstLocationUpdate = true;
+
+                return;
+
+            }
+
+            // AKTIFKAN GPS
+            locationActive = true;
+
+            watchId = navigator.geolocation.watchPosition(
+
+                function (position) {
+
+                    const lat = position.coords.latitude;
+
+                    const lng = position.coords.longitude;
+
+                    const userLatLng = [lat, lng];
+                    currentUserLatLng = userLatLng;
+
+                    // HAPUS MARKER LAMA
+                    if (userMarker) {
+
+                        map.removeLayer(userMarker);
+
+                    }
+
+                    // BUAT MARKER BARU
+                    userMarker = L.marker(userLatLng, {
+
+                        icon: L.icon({
+
+                            iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+
+                            shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+
+                            iconSize: [25, 41],
+
+                            iconAnchor: [12, 41],
+
+                            popupAnchor: [1, -34],
+
+                            shadowSize: [41, 41]
+
+                        })
+
+                    }).addTo(map);
+
+                    // FOKUS SEKALI
+                    if (firstLocationUpdate) {
+
+                        map.flyTo(userLatLng, 16);
+
+                        firstLocationUpdate = false;
+
+                    }
+
+                },
+
+                function (error) {
+
+                    alert('Lokasi gagal diakses');
+
+                    console.log(error);
+
+                },
+
+                {
+                    enableHighAccuracy: true,
+                    maximumAge: 0,
+                    timeout: 10000
+                }
+
+            );
+
+        }
+
+        function resetView() {
+
+            map.flyTo(
+                [0.5270, 101.4478],
+                13
+            );
+
+            // HAPUS LOKASI USER
+            if (userMarker) {
+
+                map.removeLayer(userMarker);
+
+                userMarker = null;
+
+            }
+
+            // STOP GPS
+            if (watchId !== null) {
+
+                navigator.geolocation.clearWatch(watchId);
+
+            }
+
+            locationActive = false;
+
+            firstLocationUpdate = true;
+
+            // HAPUS ROUTE
+            if (routeControl) {
+
+                map.removeControl(routeControl);
+
+            }
+
+            // TUTUP PANEL
+            document
+                .getElementById('routePanel')
+                .classList
+                .add('hidden');
+
+        }
+
+        function toggleHeatmap(el) {
+            // Simplified heatmap toggle logic
+            if (el.checked) {
+                // Add heatmap overlay logic here
+            } else {
+                // Remove heatmap logic here
+            }
+        }
+
+
+
+        // TOGGLE HOTEL
+        document
+            .getElementById('hotelLayerToggle')
+            .addEventListener('change', function () {
+
+                if (this.checked) {
+
+                    map.addLayer(markersLayer);
+
+                } else {
+
+                    map.removeLayer(markersLayer);
+
+                }
+
+            });
+
+        // TOGGLE KECAMATAN
+        document
+            .getElementById('kecamatanLayerToggle')
+            .addEventListener('change', function () {
+
+                if (this.checked) {
+
+                    map.addLayer(kecamatanLayer);
+
+                } else {
+
+                    map.removeLayer(kecamatanLayer);
+
+                }
+
+            });
+
+        // TOGGLE HEATMAP
+        document
+            .getElementById('heatmapToggle')
+            .addEventListener('change', function () {
+
+                if (!heatLayer) return;
+
+                if (this.checked) {
+
+                    map.addLayer(heatLayer);
+
+                } else {
+
+                    map.removeLayer(heatLayer);
+
+                }
+
+            });
+
+        // TOGGLE SATELLITE
+        document
+            .getElementById('satelliteToggle')
+            .addEventListener('change', function () {
+
+                if (this.checked) {
+
+                    layer_GoogleSatellite_0.addTo(map);
+
+                } else {
+
+                    map.removeLayer(layer_GoogleSatellite_0);
+
+                }
+
+            });
+
+        // FILTER RATING
+        document
+            .getElementById('ratingFilter')
+            .addEventListener('change', function () {
+
+                applyFilters();
+
+            });
+
+        // FILTER BINTANG
+        document
+            .querySelectorAll('.star-filter')
+            .forEach(button => {
+
+                button.addEventListener('click', function () {
+
+                    // RESET STYLE
+                    document
+                        .querySelectorAll('.star-filter')
+                        .forEach(btn => {
+
+                            btn.classList.remove(
+                                'bg-primary',
+                                'text-white',
+                                'active'
+                            );
+
+                            btn.classList.add(
+                                'bg-gray-200',
+                                'text-gray-700'
+                            );
+
+                        });
+
+                    // ACTIVE BUTTON
+                    this.classList.remove(
+                        'bg-gray-200',
+                        'text-gray-700'
+                    );
+
+                    this.classList.add(
+                        'bg-primary',
+                        'text-white',
+                        'active'
+                    );
+
+                    selectedStar =
+                        this.dataset.star;
+
+                    applyFilters();
+
+                });
+
+            });
+
+        function applyFilters() {
+
+            // SEARCH
+            const searchKeyword =
+                document
+                    .getElementById('searchInput')
+                    .value
+                    .toLowerCase();
+
+            // FILTER RATING
+            const selectedRating =
+                document
+                    .getElementById('ratingFilter')
+                    .value;
+
+            let filteredHotels = hotels.filter(hotel => {
+
+                // FILTER SEARCH
+                const searchMatch =
+
+                    hotel.name
+                        .toLowerCase()
+                        .includes(searchKeyword);
+
+                // FILTER RATING
+                let ratingMatch = true;
+
+                if (selectedRating !== 'all') {
+
+                    ratingMatch =
+                        hotel.rating >= parseFloat(selectedRating);
+
+                }
+
+                // FILTER BINTANG
+                let starMatch = true;
+
+                if (selectedStar !== 'all') {
+
+                    starMatch =
+                        hotel.stars == parseInt(selectedStar);
+
+                }
+
+                return (
+                    searchMatch &&
+                    ratingMatch &&
+                    starMatch
+                );
+
+            });
+
+            // UPDATE MARKER & LIST
+            renderFilteredHotels(filteredHotels);
+
+            // AUTO ZOOM
+            if (filteredHotels.length === 1) {
+
+                map.flyTo(
+
+                    [
+                        filteredHotels[0].lat,
+                        filteredHotels[0].lng
+                    ],
+
+                    17
+
+                );
+
+            }
+
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initMap();
+
+            // SEARCH REALTIME
+            document
+                .getElementById('searchInput')
+                .addEventListener('input', function () {
+
+                    applyFilters();
+
+                });
+
+            // SEARCH ENTER
+            document
+                .getElementById('searchInput')
+                .addEventListener('keypress', function (e) {
+
+                    if (e.key === 'Enter') {
+
+                        const keyword =
+                            this.value.toLowerCase();
+
+                        const foundHotel =
+                            hotels.find(hotel =>
+
+                                hotel.name
+                                    .toLowerCase()
+                                    .includes(keyword)
+
+                            );
+
+                        if (foundHotel) {
+
+                            map.flyTo(
+                                [
+                                    foundHotel.lat,
+                                    foundHotel.lng
+                                ],
+                                17
+                            );
+
+                            markersLayer.eachLayer(layer => {
+
+                                const latlng = layer.getLatLng();
+
+                                const sameLat =
+                                    Math.abs(latlng.lat - foundHotel.lat) < 0.0001;
+
+                                const sameLng =
+                                    Math.abs(latlng.lng - foundHotel.lng) < 0.0001;
+
+                                if (sameLat && sameLng) {
+
+                                    layer.openPopup();
+
+                                }
+
+                            });
+
+                        }
+
+                    }
+
+                });
+
+            // RENDER LIST HOTEL
+            renderHotelList();
+
+            // DATA HEATMAP
+            const heatData = hotels.map(hotel => [
+
+                hotel.lat,
+                hotel.lng,
+                1
+
+            ]);
+
+            // BUAT HEATMAP
+            heatLayer = L.heatLayer(heatData, {
+
+                rradius: 35,
+                blur: 30,
+                minOpacity: 0.5,
+
+            });
+        });
+    </script>
+
+    <div id="routePanel" class="hidden absolute top-24 right-6 z-[9999] w-80 bg-white rounded-2xl shadow-2xl p-5">
+
+        <div class="flex items-center justify-between mb-4">
+
+            <h3 class="text-xl font-bold text-primary">
+                Estimasi Rute
+            </h3>
+
+            <button onclick="closeRoutePanel()" class="text-gray-500 text-2xl">
+
+                ×
+
+            </button>
+
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mb-5">
+
+            <button id="carMode" onclick="setRouteMode('car')"
+                class="bg-primary text-white rounded-2xl py-4 flex flex-col items-center">
+
+                <span class="material-symbols-outlined text-3xl">
+                    directions_car
+                </span>
+
+                <span>Mobil</span>
+
+            </button>
+
+            <button id="motorMode" onclick="setRouteMode('motorcycle')"
+                class="bg-gray-100 text-gray-500 rounded-2xl py-4 flex flex-col items-center">
+
+                <span class="material-symbols-outlined text-3xl">
+                    two_wheeler
+                </span>
+
+                <span>Motor</span>
+
+            </button>
+
+        </div>
+
+        <div class="space-y-3 mb-5">
+
+            <div class="flex justify-between">
+
+                <span class="text-gray-500">
+                    Jarak
+                </span>
+
+                <span id="routeDistance" class="font-bold">
+                    -
+                </span>
+
+            </div>
+
+            <div class="flex justify-between">
+
+                <span class="text-gray-500">
+                    Waktu Est.
+                </span>
+
+                <span id="routeTime" class="font-bold text-primary">
+                    -
+                </span>
+
+            </div>
+
+        </div>
+
+        <button onclick="closeRoutePanel()" class="w-full bg-primary text-white py-4 rounded-2xl font-bold">
+
+            Tutup Rute
+
+        </button>
+    </div>
+
+    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js">
+    </script>
+
+</body>
+
+</html>
