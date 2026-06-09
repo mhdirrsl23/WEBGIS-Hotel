@@ -184,11 +184,27 @@
 <body class="bg-background text-on-surface font-body-md">
     <!-- Top AppBar -->
     <header
-        class="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-6 py-3 w-full h-16 bg-white/80 dark:bg-inverse-surface/80 backdrop-blur-xl border-b border-white/30 dark:border-outline-variant/20 shadow-sm">
-        <div class="flex items-center justify-between w-full">
-            <h1 class="text-headline-sm font-bold text-primary dark:text-primary-fixed-dim">Sebaran Hotel Pekanbaru Kota
-            </h1>
-            <div class="w-[350px] relative">
+        class="fixed top-0 left-0 right-0 z-50 flex items-center px-3 md:px-6 py-3 w-full h-auto md:h-16 bg-white/80 dark:bg-inverse-surface/80 backdrop-blur-xl border-b border-white/30 dark:border-outline-variant/20 shadow-sm">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 w-full">
+            <div class="flex items-center gap-2">
+
+                <button onclick="toggleSidebar()" class="p-2 rounded-lg hover:bg-gray-100 transition-all">
+
+                    <span class="material-symbols-outlined">
+                        menu
+                    </span>
+
+                </button>
+
+                <h1
+                    class="text-xl md:text-headline-sm font-bold text-primary dark:text-primary-fixed-dim leading-tight">
+
+                    Sebaran Hotel Pekanbaru Kota
+
+                </h1>
+
+            </div>
+            <div class="w-full md:w-[350px] relative">
 
                 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
 
@@ -197,15 +213,15 @@
                 </span>
 
                 <input id="searchInput" type="text" placeholder="Cari hotel di Pekanbaru..."
-                    class="w-full pl-12 pr-4 py-3 rounded-full border border-gray-200 bg-white shadow-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all">
+                    class="w-full pl-12 pr-4 py-3 text-sm rounded-full border border-gray-200 bg-white shadow-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all">
 
             </div>
         </div>
     </header>
-    <main class="relative pt-16 h-screen flex">
+    <main class="relative pt-[110px] md:pt-16 h-screen flex overflow-hidden">
         <!-- Sidebar Navigation (Analytical Sidebar) -->
         <aside
-            class="hidden md:flex flex-col h-full w-[360px] z-40 bg-white/70 dark:bg-inverse-surface/70 backdrop-blur-2xl border-r border-white/30 dark:border-outline-variant/20 shadow-xl overflow-hidden">
+            class="fixed md:relative top-0 left-0 h-full w-[320px] md:w-[360px] z-[9999] bg-white/90 dark:bg-inverse-surface/90 backdrop-blur-2xl border-r border-white/30 dark:border-outline-variant/20 shadow-xl overflow-hidden transition-all duration-300 -translate-x-full md:translate-x-0 flex flex-col">
             <div class="p-6 flex flex-col gap-6 h-full overflow-y-auto custom-scrollbar">
                 <!-- Welcome Section -->
                 <div>
@@ -267,7 +283,7 @@
                         <!-- Anggota 1 -->
                         <div class="flex items-center gap-4 p-3 bg-white rounded-xl shadow-sm">
 
-                            <img src="assets/anggota1.jpg"
+                            <img src="assets/images/habibie.png"
                                 class="w-16 h-16 rounded-full object-cover border-2 border-primary">
 
                             <div>
@@ -285,7 +301,7 @@
                         <!-- Anggota 2 -->
                         <div class="flex items-center gap-4 p-3 bg-white rounded-xl shadow-sm">
 
-                            <img src="assets/anggota2.jpg"
+                            <img src="assets/images/irsal.png"
                                 class="w-16 h-16 rounded-full object-cover border-2 border-primary">
 
                             <div>
@@ -303,7 +319,7 @@
                         <!-- Anggota 3 -->
                         <div class="flex items-center gap-4 p-3 bg-white rounded-xl shadow-sm">
 
-                            <img src="assets/anggota3.jpg"
+                            <img src="assets/images/ryan.png"
                                 class="w-16 h-16 rounded-full object-cover border-2 border-primary">
 
                             <div>
@@ -358,22 +374,24 @@
                 </div>
             </footer>
         </aside>
+        <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/40 z-[9998] hidden md:hidden">
+        </div>
         <!-- Main Map Area -->
         <section class="flex-1 relative">
             <div id="map"></div>
             <!-- Floating Map Controls -->
             <div class="absolute bottom-10 right-6 z-40 flex flex-col gap-2">
                 <button
-                    class="glass-panel p-3 rounded-full shadow-lg text-primary hover:bg-primary hover:text-white transition-all"
+                    class="glass-panel p-2 md:p-3 rounded-full shadow-lg text-primary hover:bg-primary hover:text-white transition-all"
                     onclick="locateMe()">
                     <span class="material-symbols-outlined">my_location</span>
                 </button>
                 <button
-                    class="glass-panel p-3 rounded-full shadow-lg text-primary hover:bg-primary hover:text-white transition-all"
+                    class="glass-panel p-2 md:p-3 rounded-full shadow-lg text-primary hover:bg-primary hover:text-white transition-all"
                     onclick="resetView()">
                     <span class="material-symbols-outlined">restart_alt</span>
                 </button>
-                <div class="mt-4 glass-panel p-4 rounded-xl shadow-xl w-48">
+                <div class="mt-4 glass-panel p-4 rounded-xl shadow-xl w-56 max-w-[80vw]">
                     <h4 class="font-label-md text-label-md text-primary mb-2">
                         Layer Peta
                     </h4>
@@ -1323,6 +1341,38 @@
                 );
 
             }
+
+        }
+
+        function toggleSidebar() {
+
+            const sidebar =
+                document.getElementById('sidebar');
+
+            const overlay =
+                document.getElementById('sidebarOverlay');
+
+            if (
+                sidebar.classList.contains('-translate-x-full')
+            ) {
+
+                sidebar.classList.remove('-translate-x-full');
+
+                overlay.classList.remove('hidden');
+
+            } else {
+
+                sidebar.classList.add('-translate-x-full');
+
+                overlay.classList.add('hidden');
+
+            }
+
+            setTimeout(() => {
+
+                map.invalidateSize();
+
+            }, 300);
 
         }
 
